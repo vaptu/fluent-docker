@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  fluent-bit:
+    image: fluent/fluent-bit:3.2.10
+    container_name: fluent-bit
+    user: "0:0"
+    restart: unless-stopped
+    command: -c /fluent-bit/etc/fluent-bit.conf
+    env_file:
+      - ./.env
+    environment:
+      - LOKI_URI=${LOKI_URI}
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/log:/var/log:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
+      - ./fluent-bit/parsers.conf:/fluent-bit/etc/parsers.conf:ro
+      - ./fluent-bit/fetch_container_name.lua:/fluent-bit/etc/fetch_container_name.lua:ro
+      - ./fluent-bit/state:/fluent-bit/state
+    environment:
+      - TZ=UTC
+    networks:
+      - loki_net
+
+networks:
+  loki_net:
+    driver: bridge
+
+
